@@ -98,41 +98,81 @@ public class _01_StringMethods {
 
     // Return the number of times String substring appears in String s
     public static int substringCount(String s, String substring) {
-        return 0;
+    	int num = 0;
+    	int index = 0;
+    	while(true) {
+    		index = s.indexOf(substring,index);
+    		if(index != -1) {
+    			num++;
+    			index+=substring.length();
+    			
+    			}
+    		else {
+    			break;
+    		}
+    	}
+
+        return num;
     }
 
     // Call Utilities.encrypt at the bottom of this file to encrypt String s
     public static String encrypt(String s, char key) {
-        return null;
+        String encrypted = Utilities.encrypt(s.getBytes(), (byte)key);
+    	return encrypted;
+        
     }
-
+   
     // Call Utilities.decrypt at the bottom of this file to decrypt the
     // cyphertext (encrypted text)
     public static String decrypt(String s, char key) {
-        return null;
+       String decrypted = Utilities.decrypt(s, (byte)key);
+	return decrypted;
     }
 
     // Return the number of words in String s that end with String substring
     // You can assume there are no punctuation marks between words
     public static int wordsEndsWithSubstring(String s, String substring) {
-        return 0;
+        int num = 0;
+        String[]arr = s.split(" ");
+        for (String word : arr) {
+        	if(word.endsWith(substring)) {
+        		num++;
+        	}
+       }
+        return num;
     }
 
     // Given String s, return the number of characters between the first
     // occurrence of String substring and the final occurrence
     // You can assume that substring will appear at least twice
     public static int distance(String s, String substring) {
-        return 0;
+        int firstIndex = s.indexOf(substring);
+        int lastIndex = s.lastIndexOf(substring);
+        return lastIndex - firstIndex - substring.length();
     }
 
     // Return true if String s is a palindrome
     // palindromes are words or phrases are read the same forward as backward.
     // HINT: ignore/remove all punctuation and spaces in the String
     public static boolean palindrome(String s) {
+       
+        s = s.replaceAll("[^a-zA-Z0-9]", "").toLowerCase();
+        
+        int front = 0;
+        int back = s.length() - 1;
+        
+    
+        while (front < back) {
+            if (s.charAt(front) != s.charAt(back)) {
+                return false;
+            }
+            front++;
+            back--;
+        }
+        
         return true;
     }
 }
-
 class Utilities {
     // This basic encryption scheme is called single-byte xor. It takes a
     // single byte and uses exclusive-or on every character in the String.

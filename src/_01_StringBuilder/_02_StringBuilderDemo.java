@@ -42,7 +42,7 @@ public static void main(String[] args) {
     System.out.println("reverse .....: " + builder.reverse().toString());
     builder.reverse();
     
-    // Deleting a single character
+    // Deleting a single characterz
     System.out.println("delete 0 ....: " + builder.deleteCharAt(0).toString());
     
     // Inserting a single character
