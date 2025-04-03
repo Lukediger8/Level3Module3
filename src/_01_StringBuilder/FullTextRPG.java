@@ -7,13 +7,24 @@ public class FullTextRPG {
     private static int playerHealth = 100;
     private static int playerDamage = 10;
     private static int playerGold = 50;
-    private static List<String> inventory = new ArrayList<>();
-    private static String currentLocation = "Town";
-    private static boolean isCheatMenuActive = false;
+    private static int playerLevel = 1;
+    private static int playerXP = 0;
+    private static int playerMana = 100;
+    private static int playerClass = 0; // 0 - Warrior, 1 - Mage, 2 - Archer
+    private static int factionReputation = 0;
     private static String equippedWeapon = "Fists";
-
-    // Weapons and their damage
+    private static String petName = "Shadow Wolf";
+    private static int petHealth = 50;
+    private static int petDamage = 10;
+    private static int prestigeLevel = 0;
+    private static List<String> inventory = new ArrayList<>();
     private static Map<String, Integer> weapons = new HashMap<>();
+    private static boolean isCheatMenuActive = false;
+    private static String currentLocation = "Town";
+    
+    // Skill tree and class abilities
+    private static int[] skillPoints = {0, 0, 0}; // Skill points for Warrior, Mage, Archer
+    private static boolean hasPet = true;
 
     public static void main(String[] args) {
         System.out.println("Welcome to the Full RPG Game!");
@@ -25,8 +36,11 @@ public class FullTextRPG {
 
         while (true) {
             System.out.println("\nYour Stats - Health: " + playerHealth + " | Damage: " + playerDamage + " | Gold: " + playerGold);
+            System.out.println("Level: " + playerLevel + " | XP: " + playerXP + " | Mana: " + playerMana);
             System.out.println("Equipped Weapon: " + equippedWeapon);
             System.out.println("Current Location: " + currentLocation);
+            System.out.println("Reputation: " + factionReputation);
+            System.out.println("Pet: " + petName + " (Health: " + petHealth + " | Damage: " + petDamage + ")");
             System.out.println("Inventory: " + (inventory.isEmpty() ? "Empty" : String.join(", ", inventory)));
 
             if (isCheatMenuActive) {
@@ -41,8 +55,10 @@ public class FullTextRPG {
             System.out.println("4. Change Weapon");
             System.out.println("5. Visit Shop");
             System.out.println("6. Play Gambling Games");
-            System.out.println("7. Cheat Menu");
-            System.out.println("8. Quit Game");
+            System.out.println("7. Quest Log");
+            System.out.println("8. Prestige");
+            System.out.println("9. Cheat Menu");
+            System.out.println("10. Quit Game");
             System.out.print("> ");
             int choice = scanner.nextInt();
             scanner.nextLine(); // consume newline
@@ -67,9 +83,15 @@ public class FullTextRPG {
                     playGambling();
                     break;
                 case 7:
-                    isCheatMenuActive = true;
+                    acceptQuest();
                     break;
                 case 8:
+                    prestige();
+                    break;
+                case 9:
+                    isCheatMenuActive = true;
+                    break;
+                case 10:
                     System.out.println("Thanks for playing! Goodbye!");
                     return;
                 default:
@@ -86,7 +108,7 @@ public class FullTextRPG {
     private static void explore() {
         System.out.println("\nYou are exploring the " + currentLocation + "...");
         Random rand = new Random();
-        int event = rand.nextInt(4);  // 4 possible events (enemies, items, boss, change location)
+        int event = rand.nextInt(5); // 5 possible events (enemies, items, boss, change location, dungeon)
 
         switch (event) {
             case 0:
@@ -100,6 +122,9 @@ public class FullTextRPG {
                 break;
             case 3:
                 changeLocation();
+                break;
+            case 4:
+                enterDungeon();
                 break;
             default:
                 System.out.println("Nothing happened.");
@@ -129,7 +154,7 @@ public class FullTextRPG {
 
                 if (enemyHealth <= 0) {
                     System.out.println("You defeated the " + enemy + "!");
-                    findGold();
+                   
                     break;
                 }
 
@@ -184,27 +209,22 @@ public class FullTextRPG {
 
     private static void dropLoot() {
         System.out.println("\nThe boss has dropped loot!");
-
-        // Random loot drop
         Random rand = new Random();
         int lootChance = rand.nextInt(100);
 
-        // 50% chance of health potion
         if (lootChance < 50) {
             String loot = "Health Potion";
             inventory.add(loot);
             System.out.println("You found a " + loot + "!");
         }
 
-        // 30% chance of gold
         lootChance = rand.nextInt(100);
         if (lootChance < 30) {
-            int gold = rand.nextInt(100) + 50;  // Random gold between 50-150
+            int gold = rand.nextInt(100) + 50;
             playerGold += gold;
             System.out.println("You found " + gold + " gold!");
         }
 
-        // 15% chance of new powerful weapon (Legendary)
         lootChance = rand.nextInt(100);
         if (lootChance < 15) {
             String[] weaponsList = {"Legendary Sword", "Legendary Axe"};
@@ -213,7 +233,6 @@ public class FullTextRPG {
             System.out.println("You found a powerful new weapon: " + newWeapon + "!");
         }
 
-        // 5% chance of a rare item (Magic Stone)
         lootChance = rand.nextInt(100);
         if (lootChance < 5) {
             String rareItem = "Magic Stone";
@@ -222,45 +241,75 @@ public class FullTextRPG {
         }
     }
 
-    private static void findItem() {
-        System.out.println("\nYou found an item!");
-        String[] items = {"Health Potion", "Magic Stone", "Sword"};
-        Random rand = new Random();
-        String item = items[rand.nextInt(items.length)];
-        inventory.add(item);
-        System.out.println("You picked up a " + item + ".");
+    private static void enterDungeon() {
+        System.out.println("\nYou are entering a dungeon...");
+        int dungeonLevel = 1 + playerLevel / 5;  // Harder dungeons as the player progresses
+        System.out.println("Dungeon Level: " + dungeonLevel);
+        encounterDungeonBoss(dungeonLevel);
     }
 
-    private static void findGold() {
-        System.out.println("\nYou found some gold!");
+    private static void encounterDungeonBoss(int dungeonLevel) {
+        System.out.println("You have encountered a Dungeon Boss!");
+        String bossName = "Dungeon Boss (Level " + dungeonLevel + ")";
+        int bossHealth = 50 + (dungeonLevel * 10);
+        int bossDamage = 10 + (dungeonLevel * 2);
+
+        while (bossHealth > 0 && playerHealth > 0) {
+            System.out.println("\n1. Attack");
+            System.out.println("2. Flee");
+            System.out.print("> ");
+            int choice = scanner.nextInt();
+            scanner.nextLine(); // consume newline
+
+            if (choice == 1) {
+                int damageDealt = playerDamage + weapons.get(equippedWeapon);
+                bossHealth -= damageDealt;
+                System.out.println("You dealt " + damageDealt + " damage to the boss. It has " + bossHealth + " health left.");
+
+                if (bossHealth <= 0) {
+                    System.out.println("You defeated the " + bossName + "!");
+                    dropLoot();
+                    break;
+                }
+
+                int damageTaken = bossDamage;
+                playerHealth -= damageTaken;
+                System.out.println("The boss attacked you for " + damageTaken + " damage. You have " + playerHealth + " health left.");
+            } else if (choice == 2) {
+                System.out.println("You fled from the dungeon boss.");
+                break;
+            } else {
+                System.out.println("Invalid choice. Try again.");
+            }
+        }
+    }
+
+    private static void findItem() {
+        System.out.println("\nYou find a useful item!");
         Random rand = new Random();
-        int gold = rand.nextInt(50) + 10;
-        playerGold += gold;
-        System.out.println("You found " + gold + " gold. You now have " + playerGold + " gold.");
+        int itemChance = rand.nextInt(100);
+
+        if (itemChance < 40) {
+            String item = "Health Potion";
+            inventory.add(item);
+            System.out.println("You found a " + item + "!");
+        } else if (itemChance < 70) {
+            String weapon = "Sword";
+            weapons.put(weapon, 20);
+            System.out.println("You found a " + weapon + "!");
+        } else {
+            String rareItem = "Magic Scroll";
+            inventory.add(rareItem);
+            System.out.println("You found a rare item: " + rareItem + "!");
+        }
     }
 
     private static void changeLocation() {
-        System.out.println("\nWhere would you like to go?");
-        System.out.println("1. Forest");
-        System.out.println("2. Dungeon");
-        System.out.println("3. Castle");
-        System.out.print("> ");
-        int choice = scanner.nextInt();
-        scanner.nextLine(); // consume newline
-
-        switch (choice) {
-            case 1:
-                currentLocation = "Forest";
-                break;
-            case 2:
-                currentLocation = "Dungeon";
-                break;
-            case 3:
-                currentLocation = "Castle";
-                break;
-            default:
-                System.out.println("Invalid location. Staying in the current location.");
-        }
+        System.out.println("\nYou are traveling to a new location...");
+        String[] locations = {"Forest", "Cave", "Desert", "Mountain"};
+        Random rand = new Random();
+        currentLocation = locations[rand.nextInt(locations.length)];
+        System.out.println("You have arrived at the " + currentLocation);
     }
 
     private static void checkInventory() {
@@ -268,104 +317,66 @@ public class FullTextRPG {
         if (inventory.isEmpty()) {
             System.out.println("Your inventory is empty.");
         } else {
-            System.out.println("Items: " + String.join(", ", inventory));
+            for (String item : inventory) {
+                System.out.println("- " + item);
+            }
         }
     }
 
     private static void rest() {
-        System.out.println("\nYou take a rest to regain health...");
-        int healthRestored = new Random().nextInt(20) + 10;
-        playerHealth += healthRestored;
-        System.out.println("You restored " + healthRestored + " health. You now have " + playerHealth + " health.");
+        System.out.println("\nYou rest for a while, recovering your health.");
+        playerHealth = Math.min(playerHealth + 20, 100);
+        System.out.println("You have recovered 20 health. Current Health: " + playerHealth);
     }
 
     private static void changeWeapon() {
         System.out.println("\nChoose a weapon to equip:");
-        weapons.forEach((weapon, damage) -> {
-            System.out.println(weapon + " (Damage: " + damage + ")");
-        });
+        List<String> weaponList = new ArrayList<>(weapons.keySet());
+        for (int i = 0; i < weaponList.size(); i++) {
+            System.out.println((i + 1) + ". " + weaponList.get(i));
+        }
         System.out.print("> ");
-        String weaponChoice = scanner.nextLine();
-
-        if (weapons.containsKey(weaponChoice)) {
-            equippedWeapon = weaponChoice;
-            System.out.println("You have equipped the " + weaponChoice + ".");
+        int choice = scanner.nextInt();
+        scanner.nextLine(); // consume newline
+        if (choice >= 1 && choice <= weaponList.size()) {
+            equippedWeapon = weaponList.get(choice - 1);
+            playerDamage = weapons.get(equippedWeapon);
+            System.out.println("You equipped " + equippedWeapon + "!");
         } else {
-            System.out.println("Invalid weapon choice.");
+            System.out.println("Invalid choice.");
         }
     }
 
     private static void visitShop() {
-        System.out.println("\nWelcome to the Shop!");
-        System.out.println("1. Health Potion (50 Gold)");
-        System.out.println("2. Legendary Sword (500 Gold)");
-        System.out.println("3. Legendary Axe (600 Gold)");
-        System.out.println("4. Back to Main Game");
+        System.out.println("\nYou visit the shop.");
+        System.out.println("1. Buy Health Potion (10 gold)");
+        System.out.println("2. Buy Sword (30 gold)");
+        System.out.println("3. Leave Shop");
         System.out.print("> ");
         int choice = scanner.nextInt();
         scanner.nextLine(); // consume newline
 
         switch (choice) {
             case 1:
-                if (playerGold >= 50) {
-                    playerGold -= 50;
+                if (playerGold >= 10) {
+                    playerGold -= 10;
                     inventory.add("Health Potion");
-                    System.out.println("You bought a Health Potion!");
+                    System.out.println("You bought a Health Potion.");
                 } else {
-                    System.out.println("You don't have enough gold.");
+                    System.out.println("Not enough gold.");
                 }
                 break;
             case 2:
-                if (playerGold >= 500) {
-                    playerGold -= 500;
-                    weapons.put("Legendary Sword", 50);
-                    System.out.println("You bought a Legendary Sword!");
+                if (playerGold >= 30) {
+                    playerGold -= 30;
+                    weapons.put("Sword", 20);
+                    System.out.println("You bought a Sword.");
                 } else {
-                    System.out.println("You don't have enough gold.");
+                    System.out.println("Not enough gold.");
                 }
                 break;
             case 3:
-                if (playerGold >= 600) {
-                    playerGold -= 600;
-                    weapons.put("Legendary Axe", 60);
-                    System.out.println("You bought a Legendary Axe!");
-                } else {
-                    System.out.println("You don't have enough gold.");
-                }
-                break;
-            case 4:
-                System.out.println("Returning to main game...");
-                break;
-            default:
-                System.out.println("Invalid choice.");
-        }
-    }
-
-    private static void showCheatMenu() {
-        System.out.println("\nCheat Menu:");
-        System.out.println("1. Add 1000 Gold");
-        System.out.println("2. Set Health to 999");
-        System.out.println("3. Set Damage to 999");
-        System.out.println("4. Exit Cheat Menu");
-        System.out.print("> ");
-        int cheatChoice = scanner.nextInt();
-        scanner.nextLine(); // consume newline
-
-        switch (cheatChoice) {
-            case 1:
-                playerGold += 1000;
-                System.out.println("You now have 1000 extra gold.");
-                break;
-            case 2:
-                playerHealth = 999;
-                System.out.println("You have full health now!");
-                break;
-            case 3:
-                playerDamage = 999;
-                System.out.println("You now deal maximum damage!");
-                break;
-            case 4:
-                isCheatMenuActive = false;
+                System.out.println("You leave the shop.");
                 break;
             default:
                 System.out.println("Invalid choice.");
@@ -373,89 +384,66 @@ public class FullTextRPG {
     }
 
     private static void playGambling() {
-        System.out.println("\nWelcome to the Gambling Games!");
-        System.out.println("1. Heads or Tails");
-        System.out.println("2. Blackjack");
-        System.out.println("3. Back to Main Menu");
+        System.out.println("\nYou play a gambling game.");
+        Random rand = new Random();
+        int gambleResult = rand.nextInt(100);
+        if (gambleResult < 50) {
+            System.out.println("You lost your bet.");
+            playerGold -= 20;
+        } else {
+            System.out.println("You won the bet!");
+            playerGold += 50;
+        }
+        System.out.println("Current Gold: " + playerGold);
+    }
+
+    private static void acceptQuest() {
+        System.out.println("\nYou accept a new quest: Defeat the Goblin King!");
+        // More complex quests can be added here.
+    }
+
+    private static void prestige() {
+        if (playerLevel >= 100) {
+            prestigeLevel++;
+            playerLevel = 1;
+            playerXP = 0;
+            playerHealth = 100;
+            playerMana = 100;
+            playerDamage = 10;
+            playerGold = 50;
+            System.out.println("You have reached Prestige Level " + prestigeLevel + "! All stats have reset.");
+        } else {
+            System.out.println("You need to be level 100 to prestige.");
+        }
+    }
+
+    private static void showCheatMenu() {
+        System.out.println("\nCheat Menu:");
+        System.out.println("1. Add 1000 gold");
+        System.out.println("2. Max out player level");
+        System.out.println("3. Back to main menu");
         System.out.print("> ");
-        int gamblingChoice = scanner.nextInt();
+        int choice = scanner.nextInt();
         scanner.nextLine(); // consume newline
 
-        switch (gamblingChoice) {
+        switch (choice) {
             case 1:
-                headsOrTails();
+                playerGold += 1000;
+                System.out.println("You added 1000 gold. Current Gold: " + playerGold);
                 break;
             case 2:
-                blackjack();
+                playerLevel = 100;
+                playerXP = 0;
+                playerHealth = 100;
+                playerMana = 100;
+                playerDamage = 100;
+                System.out.println("Player level set to 100.");
                 break;
             case 3:
-                System.out.println("Returning to main menu...");
+                isCheatMenuActive = false;
                 break;
             default:
-                System.out.println("Invalid choice. Try again.");
-        }
-    }
-
-    private static void headsOrTails() {
-        System.out.print("\nEnter the amount of gold you want to wager: ");
-        int wager = scanner.nextInt();
-        scanner.nextLine(); // consume newline
-
-        if (wager > playerGold) {
-            System.out.println("You don't have enough gold!");
-            return;
-        }
-
-        System.out.println("Heads or Tails? Type 'Heads' or 'Tails'");
-        String choice = scanner.nextLine().toLowerCase();
-
-        if (!choice.equals("heads") && !choice.equals("tails")) {
-            System.out.println("Invalid choice. You must choose 'Heads' or 'Tails'.");
-            return;
-        }
-
-        Random rand = new Random();
-        String result = rand.nextInt(2) == 0 ? "heads" : "tails";
-        System.out.println("The coin landed on " + result + ".");
-
-        if (choice.equals(result)) {
-            playerGold += wager;
-            System.out.println("You won! You now have " + playerGold + " gold.");
-        } else {
-            playerGold -= wager;
-            System.out.println("You lost! You now have " + playerGold + " gold.");
-        }
-    }
-
-    private static void blackjack() {
-        System.out.print("\nEnter the amount of gold you want to wager: ");
-        int wager = scanner.nextInt();
-        scanner.nextLine(); // consume newline
-
-        if (wager > playerGold) {
-            System.out.println("You don't have enough gold!");
-            return;
-        }
-
-        // Simplified Blackjack Logic
-        Random rand = new Random();
-        int playerScore = rand.nextInt(10) + 12; // Player score is between 12 and 21
-        int dealerScore = rand.nextInt(10) + 12; // Dealer score is between 12 and 21
-
-        System.out.println("Your score: " + playerScore);
-        System.out.println("Dealer's score: " + dealerScore);
-
-        if (playerScore > 21) {
-            System.out.println("You busted! You lost your wager.");
-            playerGold -= wager;
-        } else if (dealerScore > 21 || playerScore > dealerScore) {
-            System.out.println("You win! You gain " + wager + " gold.");
-            playerGold += wager;
-        } else if (playerScore < dealerScore) {
-            System.out.println("You lose! You lost your wager.");
-            playerGold -= wager;
-        } else {
-            System.out.println("It's a tie! No gold exchanged.");
+                System.out.println("Invalid choice.");
         }
     }
 }

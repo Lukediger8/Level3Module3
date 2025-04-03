@@ -29,10 +29,13 @@ public class _03_StringBuilder {
   
     
     public static String insert(String str, int index, char newChar) {
-        return null;
+    	String b4 = str.substring(0,index);
+    	String after = str.substring(index);
+        return b4 + newChar + after;
     }
     
     public static String delete(String str, int startIndex, int endIndex) {
-        return null;
+        String sigma = str.substring(startIndex, endIndex);
+		return str.replace(sigma, "");
     }
 }
